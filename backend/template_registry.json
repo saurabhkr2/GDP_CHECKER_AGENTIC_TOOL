@@ -1,0 +1,79 @@
+{
+  "GDP-DHF-TPL-v3.2": {
+    "name": "DHF Master Template",
+    "version": "3.2",
+    "document_type": "DHF",
+    "status": "current",
+    "expected_sections": [
+      "Purpose", "Scope", "References", "Abbreviations",
+      "Revision History", "Approvals",
+      "Design Inputs", "Design Outputs",
+      "Design Verification", "Design Validation",
+      "Risk Management", "Open Issues"
+    ]
+  },
+  "GDP-DHF-TPL-v3.1": {
+    "name": "DHF Master Template",
+    "version": "3.1",
+    "document_type": "DHF",
+    "status": "deprecated",
+    "supersedes": "GDP-DHF-TPL-v3.0",
+    "superseded_by": "GDP-DHF-TPL-v3.2",
+    "expected_sections": [
+      "Purpose", "Scope", "References", "Abbreviations",
+      "Revision History", "Approvals",
+      "Design Inputs", "Design Outputs",
+      "Verification", "Validation",
+      "Risk Management"
+    ]
+  },
+  "GDP-VER-TPL-v2.0": {
+    "name": "Verification Plan Template",
+    "version": "2.0",
+    "document_type": "Verification",
+    "status": "current",
+    "expected_sections": [
+      "Purpose", "Scope", "References", "Abbreviations",
+      "Revision History", "Approvals",
+      "Test Strategy", "Entry Criteria", "Exit Criteria",
+      "Test Cases", "Test Results",
+      "Open Issues", "Statistical Considerations"
+    ]
+  },
+  "GDP-RFS-TPL-v1.4": {
+    "name": "Requirements Specification Template",
+    "version": "1.4",
+    "document_type": "RFS",
+    "status": "current",
+    "expected_sections": [
+      "Purpose", "Scope", "References", "Abbreviations",
+      "Revision History", "Approvals",
+      "System Requirements", "Functional Requirements",
+      "Non-Functional Requirements", "Traceability"
+    ]
+  },
+  "GDP-RISK-TPL-v2.1": {
+    "name": "Risk Management File Template",
+    "version": "2.1",
+    "document_type": "Risk",
+    "status": "current",
+    "expected_sections": [
+      "Purpose", "Scope", "References", "Abbreviations",
+      "Revision History", "Approvals",
+      "Hazard Analysis", "Risk Evaluation",
+      "Risk Control", "Residual Risk", "Risk Benefit Analysis"
+    ]
+  },
+  "GDP-DMR-TPL-v1.2": {
+    "name": "Device Master Record Template",
+    "version": "1.2",
+    "document_type": "DMR",
+    "status": "current",
+    "expected_sections": [
+      "Purpose", "Scope", "References", "Abbreviations",
+      "Revision History", "Approvals",
+      "Device Specifications", "Production Process",
+      "Quality Assurance", "Packaging & Labeling", "Servicing"
+    ]
+  }
+}

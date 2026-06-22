@@ -1,0 +1,60 @@
+# Docker Compose stack for the DHF GDP Checker.
+#
+#   redis     – shared session store for login
+#   backend   – Flask + LangGraph agentic API (also serves LDAP login)
+#   frontend  – Flask UI server (login + review pages)
+#
+# Usage:
+#   copy .env.example .env   # fill in Azure OpenAI + LDAP values
+#   docker compose up --build
+#
+# Then open http://localhost:5000/  (you'll be sent to /login first).
+
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Talk to the redis service inside the compose network.
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      AGENTIC_API_PORT: "5003"
+      # The browser (not the frontend container) calls the API, so allow the
+      # host-visible frontend origin and send credentials for the session cookie.
+      CORS_ALLOWED_ORIGINS: "http://localhost:5000"
+    ports:
+      - "5003:5003"
+    volumes:
+      - agent-workspace:/app/.agent_workspace
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    environment:
+      # Browser-reachable URL of the backend API (host port mapping).
+      AGENTIC_API_URL: "http://localhost:5003/api"
+      FRONTEND_PORT: "5000"
+    ports:
+      - "5000:5000"
+    depends_on:
+      - backend
+
+volumes:
+  redis-data:
+  agent-workspace:

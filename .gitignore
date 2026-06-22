@@ -1,0 +1,129 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+docs/
+# Virtual Environments
+venv/
+env/
+ENV/
+.venv
+.env
+
+# Flask
+instance/
+.webassets-cache
+flask_session/
+
+# Agentic workspace (uploaded docs + generated artefacts)
+.agent_workspace/
+backend/.agent_workspace/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.bak
+*~
+
+# Temporary Files
+*.tmp
+*.temp
+*.swp
+*.swo
+*.swn
+.~*
+~$*
+*.orig
+*.rej
+*.conflict
+*.cache
+*.pid
+
+# Application specific
+temp_docx_brand_extract/
+inspect_docx/
+timings.json
+*.docx
+!1.) *.docx
+!*template*.docx
+uploads/
+downloads/
+output/
+results/
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+.junit/
+
+# Node (for frontend testing)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.eslintcache
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Secrets and Config
+.env.local
+.env.*.local
+secrets.json
+config.local.json
+
+# Documentation builds
+docs/_build/
+site/

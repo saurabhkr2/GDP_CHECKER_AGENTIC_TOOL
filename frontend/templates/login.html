@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign in — DHF Quality Assurance</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}" />
+</head>
+<body>
+    <script>
+      window.AGENTIC_API_URL = "{{ agentic_api_url }}";
+    </script>
+
+    <div class="login-container">
+      <div class="login-header">
+        <div class="logo-container">
+          <svg class="philips-logo" viewBox="0 0 160 50" xmlns="http://www.w3.org/2000/svg">
+            <text x="10" y="35" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="white">PHILIPS</text>
+          </svg>
+        </div>
+        <h1>DHF Quality Assurance</h1>
+        <p>Sign in with your Philips account</p>
+      </div>
+
+      <div class="login-body">
+        <form id="loginForm" autocomplete="on">
+          <label class="field-label" for="username">Email</label>
+          <input type="email" id="username" name="username" placeholder="firstname.lastname@philips.com" required autofocus />
+
+          <label class="field-label" for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="••••••••" required />
+
+          <div id="loginError" class="login-error hidden" role="alert"></div>
+
+          <button type="submit" id="loginBtn" class="btn-login">Sign in</button>
+        </form>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/login.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+/* Login page styling — matches the Philips brand used across the app. */
+.login-container {
+    max-width: 420px;
+    margin: 8vh auto 0;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+}
+
+.login-header {
+    background: #0E4194;
+    color: #fff;
+    padding: 30px 30px 26px;
+    text-align: center;
+    border-bottom: 4px solid #00857C;
+}
+
+.login-header .logo-container {
+    justify-content: center;
+    margin-bottom: 14px;
+}
+
+.login-header h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+    letter-spacing: 0.5px;
+}
+
+.login-header p {
+    opacity: 0.9;
+    font-size: 14px;
+    margin: 0;
+}
+
+.login-body {
+    padding: 28px 30px 32px;
+}
+
+.field-label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #243b53;
+    margin: 14px 0 6px;
+}
+
+.login-body input {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 15px;
+    border: 1.5px solid #cdd7e3;
+    border-radius: 8px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    background: #f8fafc;
+}
+
+.login-body input:focus {
+    outline: none;
+    border-color: #0E4194;
+    box-shadow: 0 0 0 3px rgba(14, 65, 148, 0.15);
+    background: #fff;
+}
+
+.btn-login {
+    width: 100%;
+    margin-top: 22px;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(135deg, #0E4194 0%, #00857C 100%);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.05s ease;
+}
+
+.btn-login:hover { opacity: 0.92; }
+.btn-login:active { transform: translateY(1px); }
+.btn-login:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.login-error {
+    margin-top: 16px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: #b42318;
+    background: #fef3f2;
+    border: 1px solid #fecdca;
+    border-radius: 8px;
+}
+
+.hidden { display: none !important; }

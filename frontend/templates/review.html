@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DHF Quality Assurance — Agentic Review</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/agentic.css') }}" />
+</head>
+<body>
+    <script>
+      window.AGENTIC_API_URL = "{{ agentic_api_url }}";
+    </script>
+
+    <div class="container">
+      <div class="header">
+        <div class="logo-container">
+          <svg class="philips-logo" viewBox="0 0 160 50" xmlns="http://www.w3.org/2000/svg">
+            <text x="10" y="35" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="white">PHILIPS</text>
+          </svg>
+        </div>
+        <div class="header-content">
+          <h1>DHF Quality Assurance</h1>
+          <p>Agentic review with human-in-the-loop approval</p>
+        </div>
+        <div class="user-bar" id="userBar">
+          <span class="user-name" id="userName"></span>
+          <button type="button" class="btn-logout" id="logoutBtn" title="Sign out">Sign out</button>
+        </div>
+      </div>
+
+      <div class="content">
+        <!-- Step 1: upload -->
+        <section id="uploadStep" class="card">
+          <h2>1. Upload documents</h2>
+          <form id="uploadForm" autocomplete="off">
+            <div class="upload-section">
+              <label class="file-label" for="document">📄 Document (.docx)</label>
+              <input type="file" id="document" name="document" accept=".docx" required />
+            </div>
+            <div class="upload-section">
+              <label class="file-label" for="template">📑 Template (.docx)</label>
+              <input type="file" id="template" name="template" accept=".docx" required />
+            </div>
+            <div class="upload-section">
+              <label class="file-label" for="brand">Brand</label>
+              <input type="text" id="brand" name="brand" value="Philips" />
+            </div>
+
+            <div class="upload-section">
+              <label class="file-label" for="documentType">Document type</label>
+              <select id="documentType" name="document_type">
+                <option value="">Auto / Any</option>
+                <option value="DHF">DHF</option>
+                <option value="DMR">DMR</option>
+                <option value="RFS">RFS</option>
+                <option value="Verification">Verification</option>
+                <option value="Risk">Risk</option>
+              </select>
+              <div class="muted small">Drives which checks apply (e.g. test verdicts only for Verification).</div>
+            </div>
+
+            <div class="upload-section noise-controls">
+              <div>
+                <label class="file-label" for="minSeverity">Min severity</label>
+                <select id="minSeverity" name="min_severity">
+                  <option value="">Minor (default)</option>
+                  <option value="Moderate">Moderate</option>
+                  <option value="Major">Major</option>
+                  <option value="Critical">Critical</option>
+                </select>
+              </div>
+              <div>
+                <label class="file-label" for="maxPerSection">Max issues per section</label>
+                <input type="number" id="maxPerSection" name="max_per_section" min="1" max="20" placeholder="5" />
+              </div>
+            </div>
+
+            <details class="upload-section checks-panel">
+              <summary><strong>Quality checks</strong> <span class="muted small" id="checksSummary">(loading…)</span></summary>
+              <div class="checks-toolbar">
+                <button type="button" class="btn btn-secondary" id="checksAllBtn">Select all</button>
+                <button type="button" class="btn btn-secondary" id="checksNoneBtn">Select none</button>
+                <button type="button" class="btn btn-secondary" id="checksDefaultsBtn">Defaults</button>
+              </div>
+              <div id="checksContainer" class="checks-grid"><span class="muted small">Loading checks…</span></div>
+            </details>
+
+            <button type="submit" class="btn-analyze">🚀 Start agentic review</button>
+          </form>
+        </section>
+
+        <!-- Step 2: progress -->
+        <section id="progressStep" class="card hidden">
+          <h2>2. Agent running</h2>
+          <div class="progress-section">
+            <div class="progress-label" id="progressLabel">Initialising…</div>
+            <div class="progress-bar-container">
+              <div class="progress-bar" id="progressBar">0%</div>
+            </div>
+            <div class="muted small" id="stageLabel"></div>
+          </div>
+          <div id="contextBox" class="context-box hidden"></div>
+        </section>
+
+        <!-- Step 3: human-in-the-loop review -->
+        <section id="reviewStep" class="card hidden">
+          <div class="review-header">
+            <h2>3. Review AI-drafted comments</h2>
+            <div class="review-toolbar">
+              <span class="muted small" id="reviewSummary"></span>
+              <button class="btn btn-secondary" id="approveAllBtn">✅ Approve all visible</button>
+              <button class="btn btn-secondary" id="rejectAllBtn">❌ Reject all visible</button>
+              <button class="btn btn-analyze" id="finalizeBtn">📥 Finalize &amp; generate document</button>
+            </div>
+          </div>
+
+          <div class="review-filters">
+            <input type="search" id="filterText" placeholder="Filter by heading, evidence, or text…" />
+            <select id="filterSeverity">
+              <option value="">All severities</option>
+              <option>Critical</option>
+              <option>Major</option>
+              <option>Moderate</option>
+              <option>Minor</option>
+            </select>
+            <select id="filterDecision">
+              <option value="">All decisions</option>
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
+            </select>
+          </div>
+
+          <pre id="errorsBox" class="errors hidden"></pre>
+          <div id="commentsList" class="comments-list"></div>
+        </section>
+
+        <!-- Step 4: results -->
+        <section id="resultsStep" class="card hidden">
+          <h2>4. Done</h2>
+          <p id="resultsSummary" class="muted"></p>
+          <div class="actions">
+            <a id="downloadDoc"     class="btn btn-download" target="_blank" rel="noopener">📄 Reviewed Document</a>
+            <a id="downloadReport"  class="btn btn-download" target="_blank" rel="noopener">📊 Markdown Report</a>
+            <button class="btn btn-reset" id="newReviewBtn">🔄 New review</button>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/agentic.js') }}"></script>
+</body>
+</html>

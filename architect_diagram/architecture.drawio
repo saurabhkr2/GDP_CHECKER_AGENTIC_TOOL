@@ -1,0 +1,90 @@
+<mxfile host="app.diagrams.net" agent="dhf-gdp-checker">
+  <diagram id="arch-simple" name="DHF GDP Checker — Simple Architecture">
+    <mxGraphModel dx="1393" dy="909" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="user" parent="1" style="shape=actor;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Reviewer" vertex="1">
+          <mxGeometry height="70" width="50" x="60" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="spa" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="React SPA&#xa;(Azure Static Web Apps)&#xa;Entra ID login" vertex="1">
+          <mxGeometry height="100" width="200" x="160" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="api" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0078D4;strokeColor=#004578;fontColor=#ffffff;fontSize=12;align=left;spacingLeft=10;" value="FastAPI Service&#xa;(Azure Container Apps)&#xa;━━━━━━━━━━━&#xa;POST /jobs   (upload)&#xa;GET  /jobs/{id}/review&#xa;POST /jobs/{id}/review&#xa;GET  /jobs/{id}/download" vertex="1">
+          <mxGeometry height="160" width="240" x="430" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="worker" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#6A1B9A;verticalAlign=top;fontStyle=1;fontSize=13;" value="LangGraph Worker  (Azure Container Apps)" vertex="1">
+          <mxGeometry height="220" width="780" x="160" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="n1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#6A1B9A;fontSize=11;" value="Load DOCX" vertex="1">
+          <mxGeometry height="60" width="110" x="190" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="n2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#6A1B9A;fontSize=11;" value="Run Checks&#xa;(regex + AI)" vertex="1">
+          <mxGeometry height="60" width="120" x="330" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="n3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FF6B6B;strokeColor=#7a1f1f;fontColor=#ffffff;fontStyle=1;fontSize=11;" value="⏸ Human Review&#xa;(interrupt)" vertex="1">
+          <mxGeometry height="60" width="140" x="480" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="n4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#6A1B9A;fontSize=11;" value="Apply Approved&#xa;Comments" vertex="1">
+          <mxGeometry height="60" width="130" x="650" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="n5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#6A1B9A;fontSize=11;" value="Save Output&#xa;(DOCX + report)" vertex="1">
+          <mxGeometry height="60" width="120" x="810" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="e_n1n2" edge="1" parent="1" source="n1" style="endArrow=block;html=1;" target="n2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_n2n3" edge="1" parent="1" source="n2" style="endArrow=block;html=1;" target="n3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_n3n4" edge="1" parent="1" source="n3" style="endArrow=block;html=1;fontSize=10;" target="n4" value="resume">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_n4n5" edge="1" parent="1" source="n4" style="endArrow=block;html=1;" target="n5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="aoai" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#10A37F;strokeColor=#064a39;fontColor=#ffffff;fontStyle=1;fontSize=12;" value="Azure OpenAI&#xa;(GPT-4 / GPT-5)" vertex="1">
+          <mxGeometry height="70" width="180" x="300" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="pg" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#7B68EE;strokeColor=#3a2f8a;fontColor=#ffffff;fontStyle=1;fontSize=12;" value="PostgreSQL&#xa;jobs · findings&#xa;decisions · checkpoints" vertex="1">
+          <mxGeometry height="140" width="200" x="1010" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="blob" parent="1" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#7B68EE;strokeColor=#3a2f8a;fontColor=#ffffff;fontStyle=1;fontSize=12;" value="Blob Storage&#xa;input + output DOCX&#xa;reports" vertex="1">
+          <mxGeometry height="140" width="200" x="1010" y="380" as="geometry" />
+        </mxCell>
+        <mxCell id="e_user_spa" edge="1" parent="1" source="user" style="endArrow=block;html=1;" target="spa">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_spa_api" edge="1" parent="1" source="spa" style="endArrow=block;html=1;fontSize=10;" target="api" value="REST + JWT">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_api_worker" edge="1" parent="1" source="api" style="endArrow=block;html=1;fontSize=10;" target="worker" value="start / resume job">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_api_pg" edge="1" parent="1" source="api" style="endArrow=classic;startArrow=classic;html=1;" target="pg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_api_blob" edge="1" parent="1" source="api" style="endArrow=classic;startArrow=classic;html=1;" target="blob">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_n2_aoai" edge="1" parent="1" source="n2" style="endArrow=block;html=1;" target="aoai">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_worker_pg" edge="1" parent="1" source="worker" style="endArrow=classic;startArrow=classic;html=1;fontSize=10;" target="pg" value="state + checkpoints">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_worker_blob" edge="1" parent="1" source="worker" style="endArrow=classic;startArrow=classic;html=1;fontSize=10;" target="blob" value="read / write DOCX">
+          <mxGeometry relative="1" x="1" y="-123" as="geometry">
+            <mxPoint x="94" y="-39" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="hitl" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFDE7;strokeColor=#F57F17;fontStyle=0;fontSize=11;align=left;spacingLeft=10;" value="Human-in-the-Loop&#xa;━━━━━━━━━━━&#xa;1. Worker pauses at Human Review&#xa;2. UI shows AI comments per heading&#xa;3. Reviewer Approves / Rejects / Edits&#xa;4. API resumes worker with decisions&#xa;5. Only approved comments written to DOCX" vertex="1">
+          <mxGeometry height="160" width="380" x="700" y="590" as="geometry" />
+        </mxCell>
+        <mxCell id="e_hitl_n3" edge="1" parent="1" source="hitl" style="endArrow=block;html=1;dashed=1;strokeColor=#F57F17;" target="n3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

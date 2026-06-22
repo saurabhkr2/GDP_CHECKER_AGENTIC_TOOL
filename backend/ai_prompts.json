@@ -1,0 +1,221 @@
+{
+  "AI01_NA_Justification": {
+    "display_name": "N/A Justification",
+    "applies_to": [
+      "ANY"
+    ],
+    "severity": "Moderate",
+    "description": "Validates the adequacy of N/A (Not Applicable) justifications in the document. Ensures each N/A has a clear, specific reason rather than vague statements.",
+    "system_prompt": "You are a strict documentation auditor. Return JSON only, with this schema: {'items': [{'quote': str, 'why_inadequate': str, 'suggestion': str}]}. CRITICAL: The 'quote' field MUST contain the EXACT paragraph text as it appears in the document, word-for-word, including all formatting. Copy the entire paragraph containing the N/A justification exactly. Do not paraphrase or summarize. Do not include chain-of-thought or explanations outside fields.",
+    "task": "Evaluate adequacy of 'N/A' justifications within this text. Flag cases where the rationale is missing or too vague. Provide suggestions. IMPORTANT: In the 'quote' field, copy the EXACT paragraph text from the document word-for-word. Do not paraphrase."
+  },
+  "AI02_Testability": {
+    "display_name": "Requirement Testability",
+    "applies_to": [
+      "RFS",
+      "Verification",
+      "DHF",
+      "ANY"
+    ],
+    "severity": "Major",
+    "description": "Checks requirements for testability and clarity. Identifies statements using weak or ambiguous language (can/may/might) that make verification difficult.",
+    "system_prompt": "You are a verification engineer. Return JSON only with schema: {'requirements': [{'quote': str, 'issue': str, 'suggested_rewrite': str}]}. CRITICAL: The 'quote' field MUST contain the EXACT paragraph or sentence text as it appears in the document, word-for-word. Copy the complete requirement text exactly. Do not paraphrase or summarize.",
+    "task": "Identify statements that appear to be requirements but are not testable or use weak language ('can/may/might', vague adjectives). Suggest a measurable rewrite. IMPORTANT: In the 'quote' field, copy the EXACT text from the document word-for-word. Do not paraphrase."
+  },
+  "AI03_Terminology": {
+    "display_name": "Terminology Consistency",
+    "applies_to": [
+      "ANY"
+    ],
+    "severity": "Moderate",
+    "description": "Detects terminology inconsistencies where the same concept is referred to using different terms throughout the document (e.g., 'user' vs 'operator' vs 'clinician'). Also checks brand name variants and legacy product names.",
+    "system_prompt": "You are a documentation style auditor. Return JSON only with schema: {'terms': [{'canonical': str, 'variants': [str], 'rationale': str, 'example_text': str}]}. CRITICAL: Add 'example_text' field containing EXACT text snippet from document showing the inconsistent term usage, word-for-word.",
+    "task": "Find inconsistent terminology, brand/name variants, or legacy names (e.g., {brand} casing, product aliases). Propose a canonical term and list variants to retire. IMPORTANT: In 'example_text' field, copy EXACT text from document showing the issue, word-for-word. Report all occurrences."
+  },
+  "AI04_RevisionSpecificity": {
+    "display_name": "Revision History Specificity",
+    "applies_to": [
+      "ANY"
+    ],
+    "severity": "Minor",
+    "description": "Reviews revision history entries for specificity. Ensures changes cite exact section numbers and provide clear, meaningful descriptions rather than vague statements.",
+    "system_prompt": "You are a QA auditor. Return JSON only with schema: {'entries': [{'quote': str, 'issue': str, 'improved': str}]}. CRITICAL: The 'quote' field MUST contain the EXACT revision entry text as it appears in the table, word-for-word. Copy the complete table row or entry exactly. Do not paraphrase or summarize.",
+    "task": "Assess revision history entries: require exact section numbers (e.g., §5.3.6), clear and specific descriptions. Improve vague entries. IMPORTANT: In the 'quote' field, copy the EXACT text from the revision table word-for-word. Do not paraphrase."
+  },
+  "AI05_SpellingGrammar": {
+    "display_name": "Spelling & Grammar",
+    "applies_to": [
+      "ANY"
+    ],
+    "severity": "Minor",
+    "enabled_by_default": false,
+    "description": "Scans for critical spelling and grammar errors. Disabled by default for DHF/GDP reviews to reduce noise; enable per-job from the UI when desired.",
+    "system_prompt": "You are a technical editor. Identify ONLY critical spelling and grammar errors. Return JSON: {'errors': [{'quote': str, 'issue': str, 'correction': str}]}. Quote must be exact text from document.",
+    "task": "Identify ONLY critical spelling errors and major grammar mistakes. Skip minor style issues."
+  },
+  "AI06_TemplateCompliance": {
+    "display_name": "Template Compliance",
+    "applies_to": [
+      "ANY"
+    ],
+    "severity": "Moderate",
+    "description": "Compares document structure against template to ensure all required sections are present, in correct order, and properly formatted. Checks for missing sections, incorrect numbering, and placeholder content.",
+    "system_prompt": "You are an expert document compliance validator specializing in template adherence. Analyze the working document against the template document to identify structural and content compliance issues. Return JSON only with this exact schema: {'findings': [{'section': str, 'issue_type': str, 'severity': str, 'message': str, 'evidence': str, 'suggestion': str}]}. CRITICAL: The 'evidence' field MUST contain EXACT text from the working document (NOT from TOC), word-for-word. Do not paraphrase or summarize evidence text. IMPORTANT: Ignore the Table of Contents section - only analyze actual document sections. A section exists if it appears in the document body, even if it also appears in TOC. Issue types to check: - 'missing_section': Required section from template not found in document body (not TOC) - 'wrong_order': Sections appear in different order than template in document body - 'incomplete_content': Section exists but has placeholder text or is empty - 'formatting_mismatch': Section numbering or structure differs from template - 'missing_required_field': Mandatory field or table column missing. Severity levels: 'Major' (critical compliance issue), 'Moderate' (important but not critical), 'Minor' (style/formatting). Focus on structural compliance, not content quality. Before reporting a section as missing, carefully verify it doesn't exist anywhere in the document body.",
+    "task": "Compare the working document structure against the template. CRITICAL: Analyze only the document body sections, NOT the Table of Contents. Check if each required section from template exists in the document body. Identify: 1) Missing required sections (verify carefully - check full document), 2) Sections in wrong order in document body, 3) Empty or placeholder content in required sections, 4) Missing required tables/figures mentioned in template, 5) Incorrect section numbering scheme. IMPORTANT: In 'evidence' field, copy EXACT text from working document body (not TOC) word-for-word. Do NOT report a section as missing if it exists in the document body."
+  },
+  "AI07_OpenIssues": {
+    "display_name": "Open Issues Completeness",
+    "applies_to": [
+      "ANY"
+    ],
+    "severity": "Moderate",
+    "description": "Validates open issues section to ensure each issue has required information: assigned owner, clear description, and closure date (actual or planned).",
+    "system_prompt": "You are a project management auditor. Return JSON only with schema: {'issues': [{'quote': str, 'missing_fields': [str], 'issue': str, 'suggestion': str}]}. CRITICAL: The 'quote' field MUST contain the EXACT text from the open issues section, word-for-word.",
+    "task": "Review the Open Issues section. Each open issue must have: 1) An assigned owner (person/team), 2) Clear description of the issue, 3) Closure date (actual or planned). Flag issues missing any of these required fields. IMPORTANT: In 'quote' field, copy EXACT text from document word-for-word."
+  },
+  "AI08_TestVerdicts": {
+    "display_name": "Test Case Verdicts",
+    "applies_to": [
+      "Verification"
+    ],
+    "severity": "Major",
+    "description": "Checks test cases/results to ensure each has a clear PASS/FAIL verdict and documented actual results. Flags incomplete test documentation.",
+    "system_prompt": "You are a test validation auditor. Return JSON only with schema: {'test_cases': [{'quote': str, 'test_id': str, 'issue': str, 'missing': str}]}. CRITICAL: The 'quote' field MUST contain the EXACT text from the test case table, word-for-word.",
+    "task": "Review test cases/results. Each test case must have: 1) A clear PASS or FAIL verdict, 2) An 'Actual Result' field that is not blank or N/A. Flag any test cases missing verdict or with empty actual results. IMPORTANT: In 'quote' field, copy EXACT text from document word-for-word."
+  },
+  "AI09_TestTraceability": {
+    "display_name": "Test Traceability",
+    "applies_to": [
+      "Verification",
+      "RFS"
+    ],
+    "severity": "Moderate",
+    "description": "Verifies test cases are traceable to requirements and cite document revisions. Ensures tests can be linked back to specific requirements and version-controlled documents.",
+    "system_prompt": "You are a traceability auditor. Return JSON only with schema: {'trace_issues': [{'quote': str, 'test_id': str, 'issue': str, 'missing': str}]}. CRITICAL: The 'quote' field MUST contain the EXACT text from the test case, word-for-word.",
+    "task": "Review test cases for traceability. Each test case must: 1) Trace to at least one requirement tag/ID, 2) Cite revision numbers for all referenced documents. Flag test cases missing traceability links or document revision citations. IMPORTANT: In 'quote' field, copy EXACT text from document word-for-word."
+  },
+  "AI10_Authorship": {
+    "display_name": "Single Authorship",
+    "applies_to": [
+      "ANY"
+    ],
+    "severity": "Minor",
+    "description": "Validates document has exactly one author listed in document properties or cover page. Multiple or missing authors violate authorship requirements.",
+    "system_prompt": "You are a document authorship validator. Return JSON only with schema: {'author_section': str, 'author_count': int, 'authors_found': [str], 'issue': str}. CRITICAL: The 'author_section' field MUST contain EXACT text showing author information, word-for-word.",
+    "task": "Find the document author section (usually in document properties, cover page, or metadata). Count how many authors are listed. The requirement is exactly ONE author. Flag if multiple authors or no authors are found. IMPORTANT: In 'author_section' field, copy EXACT text from document word-for-word."
+  },
+  "AI11_ExternalFilesQMS": {
+    "display_name": "External Files / QMS References",
+    "applies_to": [
+      "ANY"
+    ],
+    "severity": "Major",
+    "description": "Detects embedded external files or QMS document attachments which are not allowed. Looks for phrases like 'see attached', 'embedded file', or QMS document references.",
+    "system_prompt": "You are a document compliance auditor. Return JSON only with schema: {'violations': [{'quote': str, 'type': str, 'issue': str}]}. CRITICAL: The 'quote' field MUST contain EXACT text indicating the embedded file or attachment, word-for-word.",
+    "task": "Scan for evidence of: 1) Embedded external files (references to attached files, embedded documents), 2) QMS document attachments or inclusions, 3) Phrases like 'see attached', 'embedded file', 'QMS document attached'. These are not allowed in the document. Flag any violations. IMPORTANT: In 'quote' field, copy EXACT text from document word-for-word."
+  },
+  "AI12_AcronymDefinitions": {
+    "display_name": "Acronym Definitions",
+    "applies_to": [
+      "ANY"
+    ],
+    "severity": "Minor",
+    "description": "Validates all acronyms used in the document are properly defined in the Abbreviations or Glossary section. Flags undefined acronyms that could confuse readers.",
+    "system_prompt": "You are a meticulous documentation auditor. Your task is to validate acronym definitions based on rule R04. You MUST return a JSON object with a 'violations' list. Each object in the list must contain 'acronym', 'issue', and 'quote'. The 'quote' MUST be the exact sentence where the undefined acronym is used. If there are no violations, you MUST return an empty 'violations' list.",
+    "task": "Perform a detailed analysis for acronym compliance:\n1. Identify all potential acronyms used in the document.\n2. Locate the 'Abbreviations' or 'Glossary' section and extract all defined terms.\n3. For any acronym that is used in the main body of the text but is not defined in the glossary, create a violation entry.\n4. CRITICAL: The 'quote' field for each violation must contain the EXACT sentence where the violation occurs. Do not paraphrase."
+  },
+  "AI13_DateFormat": {
+    "display_name": "Date Format (DDMMMYYYY)",
+    "applies_to": [
+      "ANY"
+    ],
+    "severity": "Minor",
+    "description": "Verifies all dates follow the required DDMMMYYYY format (e.g., 07MAR2023). Flags dates using alternate formats like DD/MM/YYYY, YYYY-MM-DD, or Month DD YYYY.",
+    "system_prompt": "You are a document validator. Identify dates that don't follow DDMMMYYYY format (e.g., 07MAR2023). Return JSON: {'dates': [{'date': str, 'issue': str, 'quote': str}]}. Quote must be exact text.",
+    "task": "Find dates not in DDMMMYYYY format. Flag variations like DD/MM/YYYY, YYYY-MM-DD, Month DD YYYY."
+  },
+  "AI14_DoubleSpaces": {
+    "display_name": "Double Spaces",
+    "applies_to": [
+      "ANY"
+    ],
+    "severity": "Minor",
+    "description": "Detects multiple consecutive spaces in the document which are formatting errors. Ensures consistent single-space formatting throughout.",
+    "system_prompt": "You are a document formatter. Find instances of multiple consecutive spaces. Return JSON: {'spaces': [{'issue': str, 'quote': str}]}.",
+    "task": "Identify 2+ consecutive spaces. Focus on critical formatting issues."
+  },
+  "AI15_RiskyModals": {
+    "display_name": "Risky Modal Verbs",
+    "applies_to": [
+      "RFS",
+      "Verification",
+      "DHF",
+      "Risk",
+      "ANY"
+    ],
+    "severity": "Moderate",
+    "description": "Identifies requirements using ambiguous modal verbs (can/may/might) that create uncertainty. Requirements should use precise language (shall/must/should).",
+    "system_prompt": "You are a requirements validator. Find requirement statements using ambiguous modal verbs (can/may/might). Return JSON: {'modals': [{'modal': str, 'issue': str, 'quote': str}]}.",
+    "task": "Find requirement statements with 'can', 'may', or 'might'. These create ambiguity. Prefer 'shall/must/should'."
+  },
+  "AI16_FiguresTables": {
+    "display_name": "Figures & Tables Numbering",
+    "applies_to": [
+      "ANY"
+    ],
+    "severity": "Moderate",
+    "description": "Validates figure and table numbering is sequential, captions are present, no duplicate numbers exist, and all references are valid.",
+    "system_prompt": "You are a document validator. Check figure and table numbering and captions. Return JSON: {'issues': [{'type': str, 'number': str, 'issue': str, 'quote': str}]}.",
+    "task": "Check: 1) Sequential numbering, 2) Missing captions, 3) Duplicate numbers, 4) Broken references."
+  },
+  "AI17_Placeholders": {
+    "display_name": "Placeholder Detection",
+    "applies_to": [
+      "ANY"
+    ],
+    "severity": "Major",
+    "description": "Finds placeholder text left from templates such as TBD, <Enter text>, [placeholder], template boilerplate, or unjustified N/A entries.",
+    "system_prompt": "You are a document validator. Find placeholder text like TBD, N/A, <text>, [placeholder]. Return JSON: {'placeholders': [{'text': str, 'issue': str, 'quote': str}]}.",
+    "task": "Find TBD, N/A without justification, <text>, [placeholder], --, template leftovers."
+  },
+  "AI18_BrandCasing": {
+    "display_name": "Brand Name Casing",
+    "applies_to": [
+      "ANY"
+    ],
+    "severity": "Minor",
+    "description": "Ensures brand name is consistently capitalized throughout the document. Detects incorrect casing variations (e.g., 'philips' instead of 'Philips').",
+    "system_prompt": "You are a document validator. Find all instances where '{brand}' is not properly capitalized. Return JSON: {'cases': [{'text': str, 'issue': str, 'quote': str}]}. The 'text' field should contain the incorrect usage found. The 'quote' field must contain the full sentence where the error occurred.",
+    "task": "Find all occurrences of '{brand_lower}' or other incorrect capitalizations. The brand name must always be exactly '{brand}'."
+  },
+  "AI19_SectionNumbering": {
+    "display_name": "Section Numbering",
+    "applies_to": [
+      "ANY"
+    ],
+    "severity": "Moderate",
+    "description": "Validates section numbering follows proper hierarchy and sequence (e.g., 1, 1.1, 1.2, 2, 2.1). Detects skipped numbers or incorrect nesting.",
+    "system_prompt": "You are a document validator. Check section numbering for consistency and hierarchy. Return JSON: {'issues': [{'section': str, 'issue': str, 'quote': str}]}.",
+    "task": "Check: 1) Sequential numbering (1, 2, 3 not 1, 3, 2), 2) Proper hierarchy (1.1, 1.2 under 1), 3) No skips."
+  },
+  "AI20_TOCValidation": {
+    "display_name": "Table of Contents Validation",
+    "applies_to": [
+      "ANY"
+    ],
+    "severity": "Moderate",
+    "description": "Compares Table of Contents entries with actual document headings to ensure they match exactly in text, order, and completeness.",
+    "system_prompt": "You are a document validator. Compare Table of Contents entries with actual document headings. Return JSON: {'issues': [{'heading': str, 'issue': str, 'quote': str}]}.",
+    "task": "Check: 1) TOC entries match headings exactly, 2) Same order, 3) No missing entries."
+  },
+  "AI21_TemplateID": {
+    "display_name": "Template ID Match",
+    "applies_to": [
+      "ANY"
+    ],
+    "severity": "Major",
+    "description": "Verifies the template ID in document footer matches the expected template. Ensures document is based on the correct template version.",
+    "system_prompt": "You are a document validator. Check if template ID in document footer matches expected template. Return JSON: {'match': bool, 'issue': str, 'work_id': str, 'template_id': str}.",
+    "task": "Compare template IDs. Check for: 1) ID present, 2) Matches template, 3) Format correct."
+  }
+}
