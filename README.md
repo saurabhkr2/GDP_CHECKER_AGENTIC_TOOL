@@ -139,6 +139,11 @@ backend/
 │   ├── state.py              # AgentState + DraftComment
 │   ├── nodes.py              # Graph nodes
 │   └── graph.py              # Graph wiring + checkpointer
+├── monitoring/               # Usage tracking for IGTS AI Savings
+│   ├── schema.py             # GDPCheckerUsageRecord dataclass
+│   ├── storage.py            # SQLite persistence
+│   ├── collector.py          # Session data collection
+│   └── export.py             # CSV export utilities
 ├── ai_checks.py              # 21 quality check functions
 ├── ai_prompts.json           # AI check configurations
 ├── context_extractor.py      # Structured context pre-pass
@@ -189,6 +194,46 @@ pytest tests/ -v
 - **Human-in-the-loop**: No AI comment is applied without explicit approval.
 - **Local processing**: Regex checks run locally without external API calls.
 - **No data retention**: Documents are processed in per-session workspaces.
+
+---
+
+## 📊 Usage Monitoring (IGTS AI Savings)
+
+The application tracks usage metrics for IGTS AI Savings reporting. Each completed session records:
+
+| Field | Description |
+|-------|-------------|
+| `timestamp` | Session completion time |
+| `reporting_month` | Month name for reporting (e.g., "June") |
+| `user_email` | Logged-in user's email |
+| `template_doc_name` | Template document filename |
+| `draft_doc_name` | Draft document filename |
+| `comments_generated` | Total AI comments generated |
+| `paragraphs_analyzed` | Number of paragraphs processed |
+| `comments_accepted` | Comments approved by reviewer |
+| `comments_rejected` | Comments rejected by reviewer |
+| `comments_modified` | Comments edited by reviewer |
+| `ai_processing_time_sec` | Time spent on AI analysis |
+| `human_review_time_sec` | Time spent on human review |
+| `productivity_factor` | Multiplier for hours saved (default: 2.0) |
+| `productivity_hours_saved` | Calculated hours saved (sessions × factor) |
+
+### Configuration
+
+```ini
+# .env
+GDP_CHECKER_MONITORING_DB=        # Path to SQLite DB (default: monitoring/data/usage.db)
+GDP_CHECKER_PRODUCTIVITY_FACTOR=2.0  # Hours saved per session
+```
+
+### Export Data
+
+```python
+from monitoring import export_to_csv
+export_to_csv("usage_report.csv", start_date="2026-01-01", end_date="2026-06-30")
+```
+
+---
 
 ## License
 

@@ -44,6 +44,18 @@ from agentic.graph import get_app  # noqa: E402
 from agentic.nodes import get_live_progress, node_clear_live_progress  # noqa: E402
 from auth import register_auth  # noqa: E402
 
+# Monitoring: capture usage metrics
+_MONITORING_DIR = os.path.join(os.path.dirname(_BACKEND_DIR), "monitoring")
+if _MONITORING_DIR not in sys.path:
+    sys.path.insert(0, os.path.dirname(_MONITORING_DIR))
+try:
+    from monitoring import get_collector
+    _monitoring_collector = get_collector()
+    print("[agentic_api] ✅ Monitoring enabled")
+except ImportError as e:
+    _monitoring_collector = None
+    print(f"[agentic_api] ⚠️ Monitoring disabled: {e}")
+
 ALLOWED_EXT = {"docx"}
 
 
@@ -123,11 +135,24 @@ def _run_graph(sid: str, initial_state: Dict[str, Any]) -> None:
         # If the graph stopped at an interrupt, `next` is non-empty.
         if snap.next:
             REGISTRY.update(sid, status="awaiting_review")
+            # Monitoring: record findings and comments generated
+            if _monitoring_collector:
+                values = dict(snap.values or {})
+                findings = values.get("findings", []) or []
+                draft_comments = values.get("draft_comments", []) or []
+                _monitoring_collector.record_findings(sid, findings)
+                _monitoring_collector.record_comments_generated(sid, len(draft_comments))
         else:
             REGISTRY.update(sid, status="done")
+            # Monitoring: complete session (no HITL review needed)
+            if _monitoring_collector:
+                _monitoring_collector.complete_session(sid, status="completed")
     except Exception as e:
         traceback.print_exc()
         REGISTRY.update(sid, status="error", error=str(e))
+        # Monitoring: record error on initial run
+        if _monitoring_collector:
+            _monitoring_collector.complete_session(sid, status="error", error_message=str(e))
 
 
 def _resume_graph(sid: str) -> None:
@@ -140,9 +165,15 @@ def _resume_graph(sid: str) -> None:
             REGISTRY.update(sid, status="awaiting_review")
         else:
             REGISTRY.update(sid, status="done")
+            # Monitoring: complete session after HITL review
+            if _monitoring_collector:
+                _monitoring_collector.complete_session(sid, status="completed")
     except Exception as e:
         traceback.print_exc()
         REGISTRY.update(sid, status="error", error=str(e))
+        # Monitoring: record error
+        if _monitoring_collector:
+            _monitoring_collector.complete_session(sid, status="error", error_message=str(e))
 
 
 # ---------------------------------------------------------------------------
@@ -263,6 +294,24 @@ def create_app() -> Flask:
             initial["max_per_section"] = max_per_section
 
         REGISTRY.create(sid, str(workspace))
+
+        # Monitoring: track session start
+        if _monitoring_collector:
+            # Get user email from:
+            # 1. Form data (if frontend sends it)
+            # 2. Auth module's current_user() (returns username which is email)
+            # 3. Fallback to anonymous
+            user_email = request.form.get("user_email", "")
+            if not user_email:
+                from auth import current_user
+                user_email = current_user() or "anonymous@philips.com"
+            _monitoring_collector.start_session(
+                session_id=sid,
+                user_email=user_email,
+                document_name=doc_name,
+                template_name=tmpl_name,
+            )
+
         t = threading.Thread(target=_run_graph, args=(sid, initial), daemon=True)
         REGISTRY.update(sid, thread=t)
         t.start()
@@ -370,6 +419,14 @@ def create_app() -> Flask:
         for d in drafts:
             if d.get("decision") == "pending":
                 d["decision"] = "rejected"
+        
+        # Monitoring: record review decisions before resuming
+        if _monitoring_collector:
+            approved = sum(1 for d in drafts if d.get("decision") == "approved")
+            rejected = sum(1 for d in drafts if d.get("decision") == "rejected")
+            edited = sum(1 for d in drafts if d.get("edited_message"))
+            _monitoring_collector.record_review(sid, approved=approved, rejected=rejected, edited=edited)
+        
         _patch_state(sid, {"draft_comments": drafts, "decisions_complete": True})
         t = threading.Thread(target=_resume_graph, args=(sid,), daemon=True)
         REGISTRY.update(sid, thread=t)
