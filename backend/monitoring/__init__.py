@@ -24,6 +24,7 @@ from .collector import (
 from .export import (
     export_monthly_csv,
     export_all_to_csv,
+    export_to_excel,
     print_summary,
 )
 
@@ -42,5 +43,6 @@ __all__ = [
     "DEFAULT_PRODUCTIVITY_FACTOR",
     "export_monthly_csv",
     "export_all_to_csv",
+    "export_to_excel",
     "print_summary",
 ]

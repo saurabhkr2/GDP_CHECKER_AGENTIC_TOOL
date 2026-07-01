@@ -34,6 +34,10 @@ _PUBLIC_PATHS = {
     "/api/logout",
     "/api/me",
     "/api/health",
+    # Machine-to-machine monitoring API — guarded by its own API key,
+    # not the LDAP session cookie.
+    "/api/monitoring/usage",
+    "/api/monitoring/summary",
 }
 
 

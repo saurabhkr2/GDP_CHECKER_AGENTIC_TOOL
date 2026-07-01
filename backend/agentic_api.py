@@ -49,14 +49,55 @@ _MONITORING_DIR = os.path.join(os.path.dirname(_BACKEND_DIR), "monitoring")
 if _MONITORING_DIR not in sys.path:
     sys.path.insert(0, os.path.dirname(_MONITORING_DIR))
 try:
-    from monitoring import get_collector
+    from monitoring import get_collector, get_storage
     _monitoring_collector = get_collector()
     print("[agentic_api] ✅ Monitoring enabled")
 except ImportError as e:
     _monitoring_collector = None
+    get_storage = None  # type: ignore
     print(f"[agentic_api] ⚠️ Monitoring disabled: {e}")
 
 ALLOWED_EXT = {"docx"}
+
+
+# Emails permitted to download the monitoring/usage report.
+# Override with a comma-separated list via GDP_CHECKER_MONITORING_ADMINS.
+_DEFAULT_MONITORING_ADMINS = [
+    "partner.saurabh.kumar_1@philips.com",
+    "ashima.arora@philips.com",
+    "iswarya.nagappan@philips.com",
+    "nishant.mishra_1@philips.com",
+    "ivan.adanja@philips.com",
+]
+_MONITORING_ALLOWED_EMAILS = {
+    e.strip().lower()
+    for e in os.getenv(
+        "GDP_CHECKER_MONITORING_ADMINS", ",".join(_DEFAULT_MONITORING_ADMINS)
+    ).split(",")
+    if e.strip()
+}
+
+# API key for machine-to-machine access to the monitoring data endpoints
+# (dashboards, ETL jobs). Set GDP_CHECKER_MONITORING_API_KEY on the VM.
+# When unset, the JSON data endpoints stay disabled (return 503) so data is
+# never exposed without an explicit key.
+_MONITORING_API_KEY = (os.getenv("GDP_CHECKER_MONITORING_API_KEY") or "").strip()
+
+
+def _check_monitoring_api_key() -> bool:
+    """Validate the API key from the Authorization or X-API-Key header."""
+    if not _MONITORING_API_KEY:
+        return False
+    provided = (request.headers.get("X-API-Key") or "").strip()
+    if not provided:
+        auth_header = (request.headers.get("Authorization") or "").strip()
+        if auth_header.lower().startswith("bearer "):
+            provided = auth_header[7:].strip()
+    if not provided:
+        return False
+    # Constant-time comparison to avoid timing attacks.
+    import hmac
+    return hmac.compare_digest(provided, _MONITORING_API_KEY)
 
 
 def _allowed(name: str) -> bool:
@@ -445,6 +486,98 @@ def create_app() -> Flask:
         if not path or not os.path.exists(path):
             return jsonify({"error": "artifact not ready"}), 404
         return send_file(path, as_attachment=True, download_name=os.path.basename(path))
+
+    @app.get("/api/monitoring/export")
+    def monitoring_export():
+        """Export all captured usage metrics as a downloadable Excel workbook."""
+        if not _monitoring_collector:
+            return jsonify({"error": "monitoring disabled"}), 503
+        from auth import current_user  # local import to avoid cycle
+        user = (current_user() or "").strip().lower()
+        if user not in _MONITORING_ALLOWED_EMAILS:
+            return jsonify({"error": "forbidden"}), 403
+        period = request.args.get("period") or None
+        try:
+            from monitoring import export_to_excel
+        except ImportError:
+            return jsonify({"error": "monitoring export unavailable"}), 503
+
+        import tempfile
+        from datetime import datetime
+
+        stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        suffix = f"_{period}" if period else ""
+        fname = f"GDP_Checker_Usage{suffix}_{stamp}.xlsx"
+        tmp = tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False)
+        tmp.close()
+        try:
+            export_to_excel(tmp.name, period_month=period)
+        except RuntimeError as e:
+            os.unlink(tmp.name)
+            return jsonify({"error": str(e)}), 500
+        return send_file(
+            tmp.name,
+            as_attachment=True,
+            download_name=fname,
+            mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+
+    # ---- Machine-to-machine data API (dashboards / ETL) --------------------
+    @app.get("/api/monitoring/usage")
+    def monitoring_usage():
+        """Raw per-session usage records as JSON. API-key protected.
+
+        Auth: send `X-API-Key: <key>` or `Authorization: Bearer <key>`.
+        Query params:
+          period  filter by month name (e.g. "June")
+          user    filter by user_email
+          limit   max rows to return (default 1000, max 10000)
+          offset  rows to skip for pagination (default 0)
+        """
+        if not _monitoring_collector or get_storage is None:
+            return jsonify({"error": "monitoring disabled"}), 503
+        if not _check_monitoring_api_key():
+            return jsonify({"error": "invalid or missing API key"}), 401
+
+        storage = get_storage()
+        period = request.args.get("period") or None
+        user = request.args.get("user") or None
+
+        try:
+            limit = min(max(int(request.args.get("limit", 1000)), 1), 10000)
+        except ValueError:
+            limit = 1000
+        try:
+            offset = max(int(request.args.get("offset", 0)), 0)
+        except ValueError:
+            offset = 0
+
+        if period:
+            records = storage.get_records_by_period(period)
+        elif user:
+            records = storage.get_records_by_user(user)
+        else:
+            records = storage.get_all_records(limit=10000)
+
+        total = len(records)
+        page = records[offset:offset + limit]
+        return jsonify({
+            "total": total,
+            "count": len(page),
+            "limit": limit,
+            "offset": offset,
+            "records": [r.to_dict() for r in page],
+        })
+
+    @app.get("/api/monitoring/summary")
+    def monitoring_summary():
+        """Aggregated usage totals as JSON. API-key protected."""
+        if not _monitoring_collector or get_storage is None:
+            return jsonify({"error": "monitoring disabled"}), 503
+        if not _check_monitoring_api_key():
+            return jsonify({"error": "invalid or missing API key"}), 401
+        storage = get_storage()
+        return jsonify(storage.get_summary_stats())
 
     @app.delete("/api/sessions/<sid>")
     def delete_session(sid: str):

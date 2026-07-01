@@ -12,6 +12,15 @@
   let checksCatalog = [];        // [{id, display_name, description, severity, enabled_by_default, applies_to}]
   let templatesCatalog = {};     // {template_id: {...}}
 
+  // Emails allowed to see/download the usage report (UI gate; server also enforces).
+  const MONITORING_ADMINS = [
+    "partner.saurabh.kumar_1@philips.com",
+    "ashima.arora@philips.com",
+    "iswarya.nagappan@philips.com",
+    "nishant.mishra_1@philips.com",
+    "ivan.adanja@philips.com",
+  ];
+
   // ---------- API ----------
   function redirectToLogin() {
     window.location.href = "/login";
@@ -43,6 +52,10 @@
       if (me && me.username) {
         const el = $("userName");
         if (el) el.textContent = me.username;
+        const exportBtn = $("exportUsageBtn");
+        if (exportBtn && MONITORING_ADMINS.includes(me.username.trim().toLowerCase())) {
+          exportBtn.style.display = "";
+        }
       }
       return true;
     } catch {
@@ -56,6 +69,32 @@
       await fetch(`${API}/logout`, { method: "POST", credentials: "include" });
     } catch { /* ignore */ }
     redirectToLogin();
+  }
+
+  async function downloadUsageReport() {
+    try {
+      const res = await fetch(`${API}/monitoring/export`, { credentials: "include" });
+      if (res.status === 401) { redirectToLogin(); return; }
+      if (!res.ok) {
+        let detail = "";
+        try { detail = (await res.json()).error; } catch { detail = await res.text(); }
+        alert(`Could not download usage report: ${detail}`);
+        return;
+      }
+      const blob = await res.blob();
+      const cd = res.headers.get("Content-Disposition") || "";
+      const m = cd.match(/filename="?([^"]+)"?/);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = (m && m[1]) || "GDP_Checker_Usage.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      alert(`Could not download usage report: ${e.message}`);
+    }
   }
 
   // ---------- catalog loading ----------
@@ -435,6 +474,8 @@
   $("checksDefaultsBtn").addEventListener("click", resetChecksToDefaults);
   const logoutBtn = $("logoutBtn");
   if (logoutBtn) logoutBtn.addEventListener("click", logout);
+  const exportUsageBtn = $("exportUsageBtn");
+  if (exportUsageBtn) exportUsageBtn.addEventListener("click", downloadUsageReport);
 
   (async () => {
     if (await ensureAuthenticated()) {

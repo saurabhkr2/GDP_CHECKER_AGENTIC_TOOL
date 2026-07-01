@@ -25,6 +25,60 @@ def export_all_to_csv(output_path: str, storage: Optional[MonitoringStorage] = N
     return storage.export_to_csv(output_path)
 
 
+def export_to_excel(
+    output_path: str,
+    period_month: Optional[str] = None,
+    storage: Optional[MonitoringStorage] = None,
+) -> str:
+    """
+    Export monitoring data to an Excel workbook (.xlsx).
+
+    Creates two sheets:
+    - "Usage": one row per session (all CSV_COLUMNS)
+    - "Summary": aggregated totals from get_summary_stats()
+
+    Requires openpyxl. Raises RuntimeError if it is not installed.
+    """
+    try:
+        from openpyxl import Workbook
+        from openpyxl.styles import Font
+    except ImportError as exc:  # pragma: no cover - depends on environment
+        raise RuntimeError(
+            "openpyxl is required for Excel export. Install it with 'pip install openpyxl'."
+        ) from exc
+
+    storage = storage or get_storage()
+    if period_month:
+        records = storage.get_records_by_period(period_month)
+    else:
+        records = storage.get_all_records()
+
+    wb = Workbook()
+
+    # --- Usage sheet ---
+    ws = wb.active
+    ws.title = "Usage"
+    ws.append(CSV_COLUMNS)
+    for cell in ws[1]:
+        cell.font = Font(bold=True)
+    for record in records:
+        data = record.to_dict()
+        ws.append([data.get(col) for col in CSV_COLUMNS])
+
+    # --- Summary sheet ---
+    summary = wb.create_sheet("Summary")
+    summary.append(["Metric", "Value"])
+    for cell in summary[1]:
+        cell.font = Font(bold=True)
+    stats = storage.get_summary_stats()
+    for key, value in stats.items():
+        summary.append([key, value])
+
+    os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
+    wb.save(output_path)
+    return output_path
+
+
 def print_summary(storage: Optional[MonitoringStorage] = None) -> None:
     storage = storage or get_storage()
     stats = storage.get_summary_stats()
@@ -53,7 +107,9 @@ def main():
         return 0
     
     try:
-        if args.period:
+        if args.output.lower().endswith(".xlsx"):
+            output = export_to_excel(args.output, args.period, storage)
+        elif args.period:
             if os.path.isdir(args.output):
                 output = export_monthly_csv(args.output, args.period, storage)
             else:
